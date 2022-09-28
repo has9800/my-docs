@@ -1,0 +1,114 @@
+# Next.js
+
+Next.js is my go to React framework. It's got a large community and really good built-in features that make my life as a developer easier. I'll split this page into basic, and advanced features, along with some context about those features.
+
+## Basic features
+
+1. File-system routing
+2. Image optimizations
+3. Incremental static regeneration
+4. API routes
+5. Built-in CSS support
+
+Let's dive into some of these features 👇🏿
+
+### 1. File-system routing
+
+Next.js uses the `/pages` folder to enable routing in an app. So from the start, tools such as `react-router` aren't needed. I always found it tedious and confusing when I needed to dynamically load certain pages anyways.
+
+Any file under the `/pages` folder gets turned into a page, and each page is just a React component.
+
+### 2. Image optimizations
+
+Images in Next.js are optimized to boost Core Web Vital scores and has some built-in performance features. Some of those features are:
+
+- It serves correctly sized images for each device
+- Modern image formats such as WebP which are easier to load
+- Provides visual stability and prevents Cumulative Layout Shifts
+- Lazy loaded, meaning their only loaded once they're in the viewport
+
+To benefit from these features, you'll need to import `Image` like so `import Image from 'next/image'`.
+
+Next Images will need `src`, `width`, and `height` properties like any regular HTML `<img />` tag. Some other properties it accepts are `objectFit` and `layout`. You can also set the priortiy of the image by adding `priority` to let Next.js know it's the Largest Contenful Paint (LCP) element in the page.
+
+### Incremental static regeneration
+
+If you have static pages, you can update or create pages after you built your site using ISR. This works on a per-page basis and won't rebuild your entire site.
+
+To use ISR, you need to export a default function named `getStaticProps` from your page. I'll get into what this function does in sections down below where I explain more advanced hacks and concepts.
+
+### 4. API routes
+
+One of my favorite features of Next.js is the API routes. It allows you to write backend code that's separated from your client-side bundle. You can write business logic and a lot of other things.
+
+The API routes are located in the `/pages` folder under the name `/api`. Any files in this folder will be turned into an API endpoint. So if you have a file named '/api/Posts', the endpoint will be `domain/api/posts`. You can fetch data from another server, database, or anything else in these routes like you would with an Express server.
+
+### 5. Built-in CSS support
+
+Next.js allows you to import CSS files from a JavaScript file. Usually in HTML, you link your stylesheet using a `<link />` tag. In Next.js, you can use `import` to bring in any stylesheets you have.
+
+##### Now, lets get into some of the more advanced features and tips...
+
+## Advanced features
+
+In this part of the page, I'll explain some of the rendering options you have in Next.js and how to get the most out of them.
+
+Next.js allows you to statically generate single page apps, render on the client, render on the server, or use a combination of both known as hybrid apps. To do this, you need to export specific functions from your pages. There are also some caveats and ways to best use these functions along with some features Next.js provides. These functions are:
+
+1. getStaticProps
+2. getStaticPaths
+3. getServerSideProps
+
+### Static rendering + client-side
+
+If you want your data to change every now and then, you can fetch it on the client and still statically generate your page. This is best if you want to show new data on every request.
+
+However, there's a catch. Since the page will fetch new data on each request, this can result in high server costs. And if you don't use a loading skeleton that matches the dimensions of the component/data you're fetching to render, this could result in layout shifts which can hurt CLS in your Core Web Vitals.
+
+##### Solution: getStaticProps
+
+This function is run at build time and fetches data from an endpoint to pre-generate the HTML which can then be used to cache it on a CDN.
+
+When users navigate to your site, the page is already pre-built and cached, maybe even on Edge networks closest to the user. Sites are blazing fast and improve the overall user experience. It's best to use this technique when a page shows the exact same data to all your users and doesn't use dynamic data or personalized content.
+
+However, as you add more pages, build time increases. And if you're calling an API on every page build, you might run a large usage bill.
+
+To work around this, we can use incremental static regeneration. This will allow us to pre-render static pages and render dynamic pages on demand.
+This will decrease build times resulting in overall developer experience.
+
+Incremental static regeneration works by showing the cached page until a specific time period. After that, the cache
+will invalidate. The page will still show stale _(meaning old)_ data, but will re-generate using the latest data on
+the next request.
+
+**Demo: getStaticProps**
+
+```js
+export async default function getStaticProps() {
+    const data = await fetch('some-api-endpoint')
+    const { posts } = await res.json()
+
+    return {
+        props: {
+            posts
+        }
+    }
+}
+```
+
+**Demo: getStaticProps with ISR\***
+
+```js
+export async default function getStaticProps() {
+    const data = await fetch('some-api-endpoint')
+    const { posts } = await res.json()
+
+    return {
+        props: {
+            posts
+        },
+        revalidate: 10, // In seconds
+    }
+}
+```
+
+### 2. getStaticPaths
