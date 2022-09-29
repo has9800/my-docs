@@ -2,9 +2,9 @@
 export default {
   projectLink: "https://github.com/has9800", // GitHub link in the navbar
   docsRepositoryBase: "https://github.com/has9800", // base URL for the docs repository
-  titleSuffix: "MyDocs – Nextra",
-  nextLinks: true,
-  prevLinks: true,
+  titleSuffix: "MyDocs",
+  nextLinks: false,
+  prevLinks: false,
   search: true,
   customSearch: null, // customizable, you can use algolia for example
   darkMode: true,
